@@ -1,7 +1,7 @@
 #include <Wire.h>         // Required for I2C communication
 #include <SparkFunSX1509.h> 
 
-// --- Motor Control Pins (from your original code) ---
+// --- Motor Control Pins ---
 int ena = 5;
 int in1 = 6;
 int in2 = 7;
@@ -9,7 +9,7 @@ int in3 = 8;
 int in4 = 9;
 int enb = 10;
 
-// --- PID Constants (from your original code) ---
+// --- PID Constants ---
 int P;
 int I;
 int D;
@@ -20,7 +20,7 @@ float Kd = 0.8;
 
 int lastError = 0;
 
-// --- Button Pins (from your original code) ---
+// --- Button Pins  ---
 int button_calibration = A3;
 int button_start = 2;
 
@@ -35,9 +35,6 @@ const byte SENSOR_PINS[] = {0, 1, 2, 3, 4, 5, 6, 7};
 const int SensorCount = sizeof(SENSOR_PINS) / sizeof(SENSOR_PINS[0]);
 uint16_t sensorValues[SensorCount]; // Array to store raw digital readings (0 or 1)
 
-// Calibration values (you'll need to populate these after a calibration run)
-// These represent the expected readings for white and black surfaces.
-// For digital sensors, it's often 0 for white and 1 for black, or vice-versa.
 // You'll adjust these based on your actual sensor behavior.
 uint16_t sensorMaxValues[SensorCount]; // Max (e.g., black)
 uint16_t sensorMinValues[SensorCount]; // Min (e.g., white)
@@ -87,7 +84,7 @@ void setup() {
     for (int j = 0; j < SensorCount; j++) {
       int value = io.digitalRead(SENSOR_PINS[j]); // Read current sensor value
       
-      // Update min/max (0 is likely white, 1 is likely black for SX1509 INPUT_PULLUP)
+      // Update min/max (0 is likely white, 1 is black for SX1509 INPUT_PULLUP)
       if (value < sensorMinValues[j]) sensorMinValues[j] = value;
       if (value > sensorMaxValues[j]) sensorMaxValues[j] = value;
     }
@@ -121,13 +118,11 @@ uint16_t readLineCustom(uint16_t *sensorValuesArray) {
     // For QRE1113 digital breakouts with INPUT_PULLUP:
     // LOW (0) means reflection (white)
     // HIGH (1) means no reflection (black)
-    // If your line is BLACK, and you're tracking the black line,
-    // then a HIGH value indicates you are over the line.
-    // We'll assume HIGH (1) means 'over the black line'.
+
     
     // Normalize values if you want a more "analog" representation from digital sensors.
-    // For simple digital sensors, 0 or 1 is often enough.
-    // If your sensors are 0 for white, 1 for black, use this:
+
+    
     int normalizedValue = sensorValuesArray[i]; // 0 for white, 1 for black
 
     // If your sensors read 1 for white and 0 for black, you'd invert:
@@ -147,7 +142,7 @@ uint16_t readLineCustom(uint16_t *sensorValuesArray) {
     // If the robot was last going right, return far right, etc.
     // For simplicity, returning a value slightly off center if completely off.
     // In a real robot, you might want to return `lastPosition` or 0/7000.
-    return lastError < 0 ? 0 : (SensorCount ) * 1000; // Returns 0 or 7000 if completely off line
+    return lastError < 0 ? 0 : (SensorCount - 1 ) * 1000; // Returns 0 or 7000 if completely off line
   }
 
   // Calculate the weighted average position
@@ -164,7 +159,7 @@ void PID_control() {
   /// Debugging line position
 
   // Error calculation: 3500 is the center for an 8-sensor array (0 to 7000)
-  int error = 4000 - positionLine;
+  int error = 3500 - positionLine;
 
   P = error;
   I = I + error; // Accumulate error for integral term
@@ -187,10 +182,10 @@ void PID_control() {
   if (motorSpeedB > 120) {
     motorSpeedB = 120;
   }
-  if (motorSpeedA < -110) { // Assuming negative means reverse
+  if (motorSpeedA < -110) {
     motorSpeedA = -110;
   }
-  if (motorSpeedB < -100) { // Assuming negative means reverse
+  if (motorSpeedB < -100) { 
     motorSpeedB = -100;
   }
 

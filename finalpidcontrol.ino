@@ -78,7 +78,7 @@ void setup() {
     sensorMaxValues[i] = 0; // Assume 0 is 'white' for initial max/min
   }
 
-  // Calibrate for a short duration (e.g., 200 iterations for a few seconds)
+  // Calibrate for a short duration ( 200 iterations for a few seconds)
   // You need to manually move the line over all sensors during calibration
   for (uint16_t i = 0; i < 200; i++) { // Reduced calibration time for quicker test
     for (int j = 0; j < SensorCount; j++) {
